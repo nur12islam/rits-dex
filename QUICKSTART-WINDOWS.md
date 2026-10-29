@@ -18,12 +18,6 @@ Open PowerShell in the repository root:
 ```powershell
 py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install -e ".[dev]" --no-deps
-```
-
-If the editable install command above is run from the repository root, use the backend path instead:
-
-```powershell
 python -m pip install -e "./backend[dev]"
 ```
 
