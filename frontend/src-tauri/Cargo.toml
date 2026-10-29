@@ -1,8 +1,8 @@
 [package]
 name = "rits"
 version = "0.1.0"
-description = "RITS local-first desktop assistant"
-authors = ["RITS contributors"]
+description = "RITS — Local-first desktop assistant"
+authors = ["Nur Islam (DARKI)"]
 edition = "2021"
 
 [build-dependencies]
