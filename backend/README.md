@@ -21,7 +21,7 @@ The API binds to loopback only. Check `http://127.0.0.1:8765/health`.
 
 - `GET /health` reports local service health.
 - `GET /api/actions` lists registered, allowlisted actions.
-- `GET /api/integrations` lists enabled app adapters (currently an empty list).
+- `GET /api/integrations` lists enabled app adapters (currently an empty list).\n- `GET /api/provider` reports whether Gemini is configured without exposing the API key.
 - `POST /api/command` routes deterministic local commands.
 - `POST /api/confirmations` creates a short-lived, one-use approval ticket for an allowlisted confirmation-required action.
 - `POST /api/confirmations/{token}/approve` consumes a ticket and executes its registered action.
@@ -39,4 +39,4 @@ Try `help`, `status`, `draft your text`, or `demo approval`. The demo approval c
 
 The confirmation gate is connected to the UI approval dialog. Tickets expire after 120 seconds and can be used once. The only confirmation-required action registered in this foundation is a harmless demo handler. Do not register real external-state-changing actions until adapter-specific argument validation, threat modeling, and integration tests are implemented.
 
-No Gemini, TTS, microphone, or external-app integration is enabled yet.
+Gemini text replies are optional and are enabled only when `RITS_GEMINI_API_KEY` is set in the environment before RITS starts. Set `RITS_GEMINI_MODEL` optionally; the default is `gemini-2.5-flash`. Gemini is used only after local rules fail and receives no tools or action executor. The key is never stored in the repository or returned by the API. TTS, microphone, wake-word detection, and external-app integration are not enabled yet.
