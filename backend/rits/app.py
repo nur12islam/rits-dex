@@ -50,7 +50,13 @@ def integrations() -> list[dict[str, object]]:
 
 @app.post("/api/command", response_model=CommandResponse)
 def command(request: CommandRequest) -> CommandResponse:
-    return route_command(request.text, registry)
+    result = route_command(request.text, registry)
+    if result.source != "not-understood" or not provider_status()["configured"]:
+        return result
+    try:
+        return CommandResponse(source="ai", message=generate_reply(request.text))
+    except GeminiUnavailable as exc:
+        return CommandResponse(source="not-understood", message=f"{exc} Your local commands still work.")
 
 
 @app.post("/api/confirmations", response_model=ConfirmationTicket)
