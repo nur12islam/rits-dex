@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+credentials.json
+
+# Node / frontend
+node_modules/
+dist/
+.vite/
+.tauri/
+
+# Desktop build artifacts
+src-tauri/target/
+target/
+
+# Local application data
+*.sqlite
+*.sqlite3
+*.db
+logs/
+*.log
+
+# Editors / operating system
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
