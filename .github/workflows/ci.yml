@@ -60,10 +60,19 @@ jobs:
       - name: Build Windows installer (includes managed backend)
         working-directory: frontend
         run: npm run tauri:build
-      - name: Upload Windows installer
+      - name: Generate installer SHA-256 checksum
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem "frontend/src-tauri/target/release/bundle/nsis/*.exe" | Select-Object -First 1
+          if (-not $installer) { throw "Windows installer executable not found." }
+          $hash = (Get-FileHash -Algorithm SHA256 $installer.FullName).Hash.ToLowerInvariant()
+          "$hash  $($installer.Name)" | Set-Content -Encoding ascii "$($installer.FullName).sha256"
+      - name: Upload Windows installer and checksum
         uses: actions/upload-artifact@v4
         with:
           name: RITS-Windows-Installer
-          path: frontend/src-tauri/target/release/bundle/nsis/*.exe
+          path: |
+            frontend/src-tauri/target/release/bundle/nsis/*.exe
+            frontend/src-tauri/target/release/bundle/nsis/*.exe.sha256
           if-no-files-found: error
           retention-days: 7
