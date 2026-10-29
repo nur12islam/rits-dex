@@ -51,7 +51,6 @@
     },
     "resources": {
       "resources/rits-backend.exe": "rits-backend.exe"
-    },
-    "homepageUrl": "https://darki.online"
+    }
   }
 }
