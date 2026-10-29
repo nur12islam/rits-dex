@@ -1,0 +1,1 @@
+The Windows backend executable is generated here by backend/build_backend.py during a release build. Do not commit generated binaries.
