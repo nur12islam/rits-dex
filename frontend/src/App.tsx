@@ -43,7 +43,18 @@ export default function App() {
     }
   }
 
-  useEffect(() => {\n    let cancelled = false;\n    let timeout: ReturnType<typeof setTimeout>;\n    let attempts = 0;\n    const poll = async () => {\n      const connected = await refreshCore();\n      attempts += 1;\n      if (!cancelled && !connected && attempts < 12) timeout = setTimeout(poll, 1000);\n    };\n    void poll();\n    return () => { cancelled = true; clearTimeout(timeout); };\n  }, []);
+  useEffect(() => {
+    let cancelled = false;
+    let timeout: ReturnType<typeof setTimeout>;
+    let attempts = 0;
+    const poll = async () => {
+      const connected = await refreshCore();
+      attempts += 1;
+      if (!cancelled && !connected && attempts < 12) timeout = setTimeout(poll, 1000);
+    };
+    void poll();
+    return () => { cancelled = true; clearTimeout(timeout); };
+  }, []);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
