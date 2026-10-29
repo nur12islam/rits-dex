@@ -28,7 +28,7 @@ fn start_backend(app: &tauri::App) -> Result<Child, String> {
     {
         // In development, run the checked-in Python backend from the repository.
         let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        let backend_dir = manifest_dir.join("../../../backend");
+        let backend_dir = manifest_dir.join("../../backend");
         let backend_dir = backend_dir.canonicalize().map_err(|e| {
             format!("Could not locate the backend source at {}: {e}", backend_dir.display())
         })?;
