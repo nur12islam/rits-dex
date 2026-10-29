@@ -22,7 +22,10 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [view, setView] = useState<View>("assistant");
   const [adapters, setAdapters] = useState<Adapter[]>([]);
-  const [checking, setChecking] = useState(false);\n  const [pendingApproval, setPendingApproval] = useState<PendingApproval | null>(null);\n  const [approvalBusy, setApprovalBusy] = useState(false);\n  const [approvalMessage, setApprovalMessage] = useState<string | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [pendingApproval, setPendingApproval] = useState<PendingApproval | null>(null);
+  const [approvalBusy, setApprovalBusy] = useState(false);
+  const [approvalMessage, setApprovalMessage] = useState<string | null>(null);
 
   async function refreshCore(): Promise<boolean> {
     setChecking(true);
