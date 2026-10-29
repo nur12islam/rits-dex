@@ -16,6 +16,18 @@ def route_command(text: str, registry: ActionRegistry) -> CommandResponse:
         message = registry.execute("assistant.status")
         return CommandResponse(source="local-rule", message=message)
 
+    if normalized in {"demo approval", "test approval", "approval demo"}:
+        return CommandResponse(
+            source="local-rule",
+            message="This is a simulated approval walkthrough. It has no external side effects.",
+            proposal={
+                "action_id": "demo.approval-check",
+                "arguments": {"demo": True},
+                "requires_confirmation": True,
+                "description": "Run a local-only approval demonstration; no files, messages, or apps will be changed",
+            },
+        )
+
     if normalized.startswith("draft "):
         draft_text = text.strip()[6:].strip()
         if not draft_text:
