@@ -5,6 +5,7 @@ from .models import CommandRequest, CommandResponse, ConfirmationRequest, Confir
 from .permissions import ConfirmationGate
 from .registry import Action, build_default_registry
 from .router import route_command
+from .gemini import GeminiUnavailable, generate_reply, provider_status
 
 app = FastAPI(title="RITS Local Core", version="0.1.0")
 app.add_middleware(
@@ -28,6 +29,12 @@ confirmation_gate = ConfirmationGate(ttl_seconds=120)
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok", "service": "rits-local-core"}
+
+
+@app.get("/api/provider")
+def provider() -> dict[str, object]:
+    """Expose provider configuration status without returning credentials."""
+    return provider_status()
 
 
 @app.get("/api/actions")
