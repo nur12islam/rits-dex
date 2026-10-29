@@ -27,12 +27,17 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis"],
+    "targets": [
+      "nsis"
+    ],
     "windows": {
       "nsis": {
         "displayName": "RITS",
         "installMode": "currentUser"
       }
+    },
+    "resources": {
+      "resources/rits-backend.exe": "rits-backend.exe"
     }
   }
 }
