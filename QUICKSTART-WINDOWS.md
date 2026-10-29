@@ -61,7 +61,15 @@ npm run tauri:build
 
 Tauri's pre-build hook runs the frontend build and `backend/build_backend.py`, which uses PyInstaller to create `rits-backend.exe` and copies it into Tauri's resource directory. The generated executable is a local build artifact and should not be committed. The Windows installer build has been validated by GitHub Actions.
 
-## 5. Optional: enable Gemini text replies\n\nCreate a Gemini API key in Google AI Studio. In PowerShell, set it for your Windows user (do not paste it into chat, source files, or GitHub):\n\n```powershell\n[Environment]::SetEnvironmentVariable("RITS_GEMINI_API_KEY", "YOUR_KEY_HERE", "User")\n```\n\nClose RITS completely and launch it again so the desktop backend inherits the new environment. Replace `YOUR_KEY_HERE` locally; never commit the key. To use a different supported model, set `RITS_GEMINI_MODEL` the same way. The `/api/provider` endpoint reports only whether a key is configured. Local commands such as `help`, `status`, and `draft ...` stay local; only requests without a matching local rule are sent to Gemini. Gemini receives text only and cannot execute actions. Cloud API usage may have quotas or charges; check your account limits. To disable Gemini, clear the user environment variable and restart RITS.\n\n## 6. Try local commands
+## 5. Optional: enable Gemini text replies\n\nCreate a Gemini API key in Google AI Studio. In PowerShell, set it for your Windows user (do not paste it into chat, source files, or GitHub):\n\n```powershell\n[Environment]::SetEnvironmentVariable("RITS_GEMINI_API_KEY", "YOUR_KEY_HERE", "User")\n```\n\nClose RITS completely and launch it again so the desktop backend inherits the new environment. Replace `YOUR_KEY_HERE` locally; never commit the key. To use a different supported model, set `RITS_GEMINI_MODEL` the same way. The `/api/provider` endpoint reports only whether a key is configured. Local commands such as `help`, `status`, and `draft ...` stay local; only requests without a matching local rule are sent to Gemini. Gemini receives text only and cannot execute actions. Cloud API usage may have quotas or charges; check your account limits. To disable Gemini, clear the user environment variable and restart RITS.\n\n## Installer branding and release trust
+
+The Windows NSIS installer is branded with publisher metadata **Nur Islam (DARKI)**, product name **RITS**, version **0.1.0**, website **https://darki.online**, the RITS icon for the installer and uninstaller, and a dedicated **RITS** Start Menu folder. The installer remains per-user by default so it does not require administrator privileges for a normal install.
+
+**Code signing is intentionally deferred.** Publisher metadata is descriptive installer metadata; it does not prove the publisher's identity, sign the executable, or guarantee that Microsoft Defender SmartScreen will stop warning. Before distributing public releases broadly, configure a legitimate Windows code-signing certificate or trusted signing service through protected CI secrets. Never commit certificate files, passwords, or signing tokens. After signing is configured, verify the signature on the final installer and bundled executable.
+
+Website: https://darki.online
+
+## 6. Try local commands
 
 - `help` — shows available commands
 - `status` — checks the local core
