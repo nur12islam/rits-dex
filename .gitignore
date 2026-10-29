@@ -29,6 +29,9 @@ dist/
 # Desktop build artifacts
 src-tauri/target/
 target/
+frontend/src-tauri/resources/rits-backend.exe
+frontend/src-tauri/resources/rits-backend
+
 
 # Local application data
 *.sqlite
