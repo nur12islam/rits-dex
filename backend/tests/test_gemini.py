@@ -1,5 +1,7 @@
 import json
 from io import BytesIO
+import socket
+from urllib.error import URLError
 
 import pytest
 
@@ -58,4 +60,31 @@ def test_empty_provider_answer_fails_closed(monkeypatch):
     monkeypatch.setenv("RITS_GEMINI_API_KEY", "test-secret")
     monkeypatch.setattr(gemini, "urlopen", lambda *_args, **_kwargs: FakeResponse({"candidates": []}))
     with pytest.raises(GeminiUnavailable, match="no answer"):
+        generate_reply("hello")
+
+
+
+def test_network_errors_explain_dns_failure_without_leaking_secrets(monkeypatch):
+    monkeypatch.setenv("RITS_GEMINI_API_KEY", "test-secret")
+
+    def fail_dns(*_args, **_kwargs):
+        raise URLError(socket.gaierror("private diagnostic detail"))
+
+    monkeypatch.setattr(gemini, "urlopen", fail_dns)
+    with pytest.raises(GeminiUnavailable, match="DNS lookup failed") as error:
+        generate_reply("hello")
+    assert "test-secret" not in str(error.value)
+    assert "private diagnostic detail" not in str(error.value)
+
+
+def test_network_errors_explain_tls_failure(monkeypatch):
+    import ssl
+
+    monkeypatch.setenv("RITS_GEMINI_API_KEY", "test-secret")
+    monkeypatch.setattr(
+        gemini,
+        "urlopen",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(URLError(ssl.SSLCertVerificationError("secret detail"))),
+    )
+    with pytest.raises(GeminiUnavailable, match="TLS verification failed"):
         generate_reply("hello")
