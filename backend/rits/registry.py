@@ -49,6 +49,14 @@ class ActionRegistry:
             raise PermissionError("This action requires explicit user confirmation.")
         return action.handler(arguments or {})
 
+    def execute_confirmed(self, action_id: str, arguments: dict[str, Any] | None = None) -> str:
+        action = self._actions.get(action_id)
+        if action is None:
+            raise KeyError(action_id)
+        if not action.requires_confirmation:
+            raise ValueError("This action does not use the confirmation path.")
+        return action.handler(arguments or {})
+
 
 def build_default_registry() -> ActionRegistry:
     registry = ActionRegistry()
