@@ -32,8 +32,8 @@
     ],
     "publisher": "Nur Islam (DARKI)",
     "homepage": "https://darki.online",
-    "shortDescription": "Local-first desktop assistant",
-    "longDescription": "RITS is a local-first desktop assistant with a permission-first command system and optional AI text replies.",
+    "shortDescription": "Local-first desktop AI assistant",
+    "longDescription": "RITS is a local-first Windows desktop assistant with safe, permission-gated workflows and optional AI-powered replies.",
     "copyright": "Copyright © 2026 Nur Islam (DARKI)",
     "icon": [
       "icons/icon.ico"
@@ -43,11 +43,15 @@
         "installMode": "currentUser",
         "installerIcon": "icons/icon.ico",
         "uninstallerIcon": "icons/icon.ico",
-        "startMenuFolder": "RITS"
+        "startMenuFolder": "RITS",
+        "languages": [
+          "English"
+        ]
       }
     },
     "resources": {
       "resources/rits-backend.exe": "rits-backend.exe"
-    }
+    },
+    "homepageUrl": "https://darki.online"
   }
 }
