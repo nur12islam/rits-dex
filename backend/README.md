@@ -23,8 +23,11 @@ The API binds to loopback only. Check `http://127.0.0.1:8765/health`.
 - `GET /api/actions` lists registered, allowlisted actions.
 - `GET /api/integrations` lists enabled app adapters (currently an empty list).
 - `POST /api/command` routes deterministic local commands.
+- `POST /api/confirmations` creates a short-lived, one-use approval ticket for an allowlisted confirmation-required action.
+- `POST /api/confirmations/{token}/approve` consumes a ticket and executes its registered action.
+- `DELETE /api/confirmations/{token}` rejects and invalidates a pending ticket.
 
-Try `help`, `status`, or `draft your text`. Drafting creates a preview proposal only; it never sends a message.
+Try `help`, `status`, `draft your text`, or `demo approval`. The demo approval command shows the explicit review/approve/reject UI; its handler has no external side effects. Drafting creates a preview proposal only; it never sends a message.
 
 ## Integration and permission contracts
 
@@ -34,6 +37,6 @@ Try `help`, `status`, or `draft your text`. Drafting creates a preview proposal 
 - `ActionRegistry.execute` refuses confirmed-only actions; those can only use the separate confirmation path.
 - No adapter is enabled by default and there is no generic shell executor.
 
-The confirmation gate is currently a backend foundation, not yet connected to a user-facing approval dialog. Do not register real external-state-changing actions until the UI confirmation flow and adapter-specific argument validation are implemented and tested.
+The confirmation gate is connected to the UI approval dialog. Tickets expire after 120 seconds and can be used once. The only confirmation-required action registered in this foundation is a harmless demo handler. Do not register real external-state-changing actions until adapter-specific argument validation, threat modeling, and integration tests are implemented.
 
 No Gemini, TTS, microphone, or external-app integration is enabled yet.
