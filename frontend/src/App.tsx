@@ -1,7 +1,8 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Activity, ArrowUpRight, Command, Cpu, Mic, ShieldCheck, Sparkles, Terminal, Puzzle, RefreshCw, LockKeyhole, Files, Globe, CalendarDays, MessageSquare } from "lucide-react";
 
-type Result = { source: string; message: string; proposal?: { action_id: string; arguments: Record<string, unknown>; description: string } | null };
+type Result = { source: string; message: string; proposal?: { action_id: string; arguments: Record<string, unknown>; description: string; requires_confirmation?: boolean } | null };
+type PendingApproval = { token: string; action_id: string; arguments: Record<string, unknown>; description: string; expires_in_seconds: number };
 type Adapter = { adapter_id: string; display_name: string; description: string; enabled: boolean; health: string; capabilities: { capability_id: string; description: string; data_class: string; requires_confirmation: boolean }[] };
 
 const API = "http://127.0.0.1:8765";
@@ -21,7 +22,7 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [view, setView] = useState<View>("assistant");
   const [adapters, setAdapters] = useState<Adapter[]>([]);
-  const [checking, setChecking] = useState(false);
+  const [checking, setChecking] = useState(false);\n  const [pendingApproval, setPendingApproval] = useState<PendingApproval | null>(null);\n  const [approvalBusy, setApprovalBusy] = useState(false);\n  const [approvalMessage, setApprovalMessage] = useState<string | null>(null);
 
   async function refreshCore(): Promise<boolean> {
     setChecking(true);
@@ -55,6 +56,62 @@ export default function App() {
     void poll();
     return () => { cancelled = true; clearTimeout(timeout); };
   }, []);
+
+  async function requestApproval() {
+    if (!result?.proposal?.requires_confirmation || approvalBusy) return;
+    setApprovalBusy(true);
+    setApprovalMessage(null);
+    try {
+      const response = await fetch(API + "/api/confirmations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action_id: result.proposal.action_id,
+          arguments: result.proposal.arguments,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Could not create approval request.");
+      setPendingApproval(data as PendingApproval);
+    } catch (error) {
+      setApprovalMessage(error instanceof Error ? error.message : "Approval request failed.");
+    } finally {
+      setApprovalBusy(false);
+    }
+  }
+
+  async function approveAction() {
+    if (!pendingApproval || approvalBusy) return;
+    setApprovalBusy(true);
+    try {
+      const response = await fetch(API + "/api/confirmations/" + encodeURIComponent(pendingApproval.token) + "/approve", { method: "POST" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Approval failed or expired.");
+      setApprovalMessage(data.message);
+      setPendingApproval(null);
+    } catch (error) {
+      setApprovalMessage(error instanceof Error ? error.message : "Approval failed.");
+      setPendingApproval(null);
+    } finally {
+      setApprovalBusy(false);
+    }
+  }
+
+  async function rejectAction() {
+    if (!pendingApproval || approvalBusy) return;
+    setApprovalBusy(true);
+    try {
+      const response = await fetch(API + "/api/confirmations/" + encodeURIComponent(pendingApproval.token), { method: "DELETE" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Rejection failed or expired.");
+      setApprovalMessage(data.message);
+    } catch (error) {
+      setApprovalMessage(error instanceof Error ? error.message : "Rejection failed.");
+    } finally {
+      setPendingApproval(null);
+      setApprovalBusy(false);
+    }
+  }
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -103,10 +160,12 @@ export default function App() {
           <section className="command-panel">
             <div className="panel-heading"><div><span className="live-dot" /> COMMAND CONSOLE</div><span>LOCAL RULES FIRST</span></div>
             <form onSubmit={submit}>
-              <textarea value={input} onChange={e => setInput(e.target.value)} placeholder="Try “help”, “status”, or “draft I’ll be there in 10 minutes”" rows={3} />
+              <textarea value={input} onChange={e => setInput(e.target.value)} placeholder="Try “help”, “status”, “draft …”, or “demo approval”" rows={3} />
               <div className="form-footer"><span><ShieldCheck size={14} /> No command is sent to the cloud in this build.</span><button disabled={!input.trim() || busy}>{busy ? "Working…" : "Run command"} <ArrowUpRight size={16} /></button></div>
             </form>
-            {result && <div className="result-box"><div className="result-label">{result.source.replace("-", " ").toUpperCase()}</div><p>{result.message}</p>{result.proposal && <div className="proposal"><b>{result.proposal.action_id}</b><span>{result.proposal.description}</span><pre>{JSON.stringify(result.proposal.arguments, null, 2)}</pre></div>}</div>}
+            {result && <div className="result-box"><div className="result-label">{result.source.replace("-", " ").toUpperCase()}</div><p>{result.message}</p>{result.proposal && <div className="proposal"><b>{result.proposal.action_id}</b><span>{result.proposal.description}</span><pre>{JSON.stringify(result.proposal.arguments, null, 2)}</pre>{result.proposal.requires_confirmation && <button className="request-approval" onClick={() => void requestApproval()} disabled={approvalBusy || !!pendingApproval}>{approvalBusy ? "Preparing…" : "Review & request approval"}</button>}</div>}</div>}
+          {pendingApproval && <section className="approval-card" role="dialog" aria-modal="true" aria-labelledby="approval-title"><div className="approval-heading"><div className="approval-icon"><ShieldCheck size={19} /></div><div><h2 id="approval-title">Approval required</h2><p>Review this action before allowing it to run.</p></div></div><div className="approval-detail"><span>ACTION</span><b>{pendingApproval.action_id}</b><p>{pendingApproval.description}</p><span>ARGUMENTS</span><pre>{JSON.stringify(pendingApproval.arguments, null, 2)}</pre><small>This one-time approval expires in {pendingApproval.expires_in_seconds} seconds.</small></div><div className="approval-actions"><button className="reject-button" onClick={() => void rejectAction()} disabled={approvalBusy}>Reject</button><button className="approve-button" onClick={() => void approveAction()} disabled={approvalBusy}>{approvalBusy ? "Processing…" : "Approve action"}</button></div></section>}
+          {approvalMessage && <div className="approval-feedback" role="status"><ShieldCheck size={16} /><span>{approvalMessage}</span><button onClick={() => setApprovalMessage(null)} aria-label="Dismiss message">×</button></div>}
           </section>
           <div className="bottom-note"><ShieldCheck size={16} /><span><b>Permission before action.</b> RITS will use registered, limited actions—not unrestricted shell access.</span></div>
         </>}
