@@ -30,9 +30,20 @@
     "targets": [
       "nsis"
     ],
+    "publisher": "Nur Islam (DARKI)",
+    "homepage": "https://darki.online",
+    "shortDescription": "Local-first desktop assistant",
+    "longDescription": "RITS is a local-first desktop assistant with a permission-first command system and optional AI text replies.",
+    "copyright": "Copyright © 2026 Nur Islam (DARKI)",
+    "icon": [
+      "icons/icon.ico"
+    ],
     "windows": {
       "nsis": {
-        "installMode": "currentUser"
+        "installMode": "currentUser",
+        "installerIcon": "icons/icon.ico",
+        "uninstallerIcon": "icons/icon.ico",
+        "startMenuFolder": "RITS"
       }
     },
     "resources": {
