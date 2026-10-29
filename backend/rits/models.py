@@ -33,6 +33,6 @@ class ConfirmationResult(BaseModel):
 
 
 class CommandResponse(BaseModel):
-    source: Literal["local-rule", "help", "not-understood"]
+    source: Literal["local-rule", "help", "not-understood", "ai"]
     message: str
     proposal: ActionProposal | None = None
