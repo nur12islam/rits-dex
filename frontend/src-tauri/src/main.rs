@@ -1,27 +1,12 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::{
-    net::{SocketAddr, TcpStream},
     process::{Child, Command, Stdio},
     sync::Mutex,
-    thread,
-    time::{Duration, Instant},
 };
 use tauri::{Manager, RunEvent};
 
 struct ManagedBackend(Mutex<Option<Child>>);
-
-fn wait_for_backend() -> Result<(), String> {
-    let address: SocketAddr = "127.0.0.1:8765".parse().expect("valid loopback address");
-    let deadline = Instant::now() + Duration::from_secs(12);
-    while Instant::now() < deadline {
-        if TcpStream::connect_timeout(&address, Duration::from_millis(200)).is_ok() {
-            return Ok(());
-        }
-        thread::sleep(Duration::from_millis(200));
-    }
-    Err("RITS backend did not open 127.0.0.1:8765 within 12 seconds".to_string())
-}
 
 fn start_backend(app: &tauri::App) -> Result<Child, String> {
     #[cfg(debug_assertions)]
@@ -45,9 +30,9 @@ fn start_backend(app: &tauri::App) -> Result<Child, String> {
             .stdin(Stdio::null())
             .stdout(Stdio::null())
             .stderr(Stdio::null());
-        return command.spawn().map_err(|e| {
+        command.spawn().map_err(|e| {
             format!("Could not start Python backend. Install Python 3.11+ and backend dependencies first: {e}")
-        });
+        })
     }
 
     #[cfg(not(debug_assertions))]
@@ -75,9 +60,6 @@ fn main() {
             match start_backend(app) {
                 Ok(child) => {
                     app.manage(ManagedBackend(Mutex::new(Some(child))));
-                    if let Err(error) = wait_for_backend() {
-                        eprintln!("{error}");
-                    }
                 }
                 Err(error) => {
                     // Keep the UI available so it can explain how to recover.
