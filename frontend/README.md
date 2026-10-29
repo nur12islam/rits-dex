@@ -1,10 +1,10 @@
 # RITS desktop UI foundation
 
-React + TypeScript + Vite interface for the RITS local core.
+React + TypeScript + Vite interface with a Tauri 2 desktop wrapper.
 
-## Run
+## Browser development
 
-In one PowerShell terminal, start the backend using [backend/README.md](../backend/README.md). In a second terminal:
+Start the backend using [the Windows quickstart](../../QUICKSTART-WINDOWS.md). In a second PowerShell terminal:
 
 ```powershell
 cd frontend
@@ -12,4 +12,16 @@ npm install
 npm run dev
 ```
 
-Open the local URL printed by Vite. This is the development UI, not yet a packaged Tauri desktop installer.
+## Native desktop development
+
+Install Rust stable, Microsoft C++ Build Tools (MSVC), and WebView2 Runtime, then:
+
+```powershell
+cd frontend
+npm install
+npm run tauri:dev
+```
+
+Build a Windows NSIS installer with `npm run tauri:build`.
+
+The FastAPI backend still runs as a separate local process and is not bundled as a sidecar yet. Start it before testing commands in the UI. Never package API keys in the desktop bundle.
