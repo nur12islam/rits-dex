@@ -1,4 +1,4 @@
-"""Short-lived, one-time confirmation tickets for future consequential actions."""
+"""Short-lived, one-time confirmation tickets for consequential actions."""
 from dataclasses import dataclass
 from secrets import token_urlsafe
 from time import monotonic
@@ -16,7 +16,7 @@ class PendingConfirmation:
 
 
 class ConfirmationGate:
-    """In-memory confirmation tickets; a restart invalidates all pending tickets."""
+    """In-memory confirmation tickets; restart invalidates all pending tickets."""
 
     def __init__(self, ttl_seconds: int = 120) -> None:
         if ttl_seconds < 1:
@@ -39,11 +39,16 @@ class ConfirmationGate:
         self._pending[token] = pending
         return pending
 
+    def reject(self, token: str) -> None:
+        pending = self._pending.pop(token, None)
+        if pending is None or monotonic() >= pending.expires_at:
+            raise PermissionError("Confirmation is invalid, expired, or already used.")
+
     def confirm(self, registry: ActionRegistry, token: str) -> str:
         pending = self._pending.pop(token, None)
         if pending is None:
             raise PermissionError("Confirmation is invalid, expired, or already used.")
         if monotonic() >= pending.expires_at:
             raise PermissionError("Confirmation expired. Review the action and request a new confirmation.")
-        # execute_confirmed is a separate path; ordinary execute still blocks it.
+        # Only this separate path can execute registered confirmation-required actions.
         return registry.execute_confirmed(pending.action_id, pending.arguments)
