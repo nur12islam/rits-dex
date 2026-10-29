@@ -26,6 +26,12 @@ def actions() -> list[dict[str, object]]:
     return registry.describe()
 
 
+@app.get("/api/integrations")
+def integrations() -> list[dict[str, object]]:
+    """No third-party adapters are enabled in the foundation build."""
+    return []
+
+
 @app.post("/api/command", response_model=CommandResponse)
 def command(request: CommandRequest) -> CommandResponse:
     return route_command(request.text, registry)
