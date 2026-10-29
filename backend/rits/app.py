@@ -8,7 +8,7 @@ from .router import route_command
 app = FastAPI(title="RITS Local Core", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:1420", "http://localhost:5173", "tauri://localhost"],
+    allow_origins=["http://localhost:1420", "http://localhost:5173", "http://tauri.localhost", "https://tauri.localhost", "tauri://localhost"],
     allow_credentials=False,
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
