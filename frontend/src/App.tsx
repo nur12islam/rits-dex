@@ -70,7 +70,7 @@ export default function App() {
       setResult(await response.json());
       setOnline(true);
     } catch {
-      setResult({ source: "offline", message: "Can't reach the local RITS core. Start the backend using the Windows quickstart." });
+      setResult({ source: "offline", message: "Can't reach the local RITS core. Check that port 8765 is free, then restart RITS. The desktop shell normally starts the backend automatically." });
       setOnline(false);
     } finally {
       setBusy(false);
