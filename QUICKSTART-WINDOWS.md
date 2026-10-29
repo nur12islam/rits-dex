@@ -2,7 +2,7 @@
 
 RITS has a Tauri 2 desktop shell, a React/TypeScript UI, and a local FastAPI command service. In desktop development mode, the Tauri shell starts the local Python backend and terminates its child process when the app exits. For a Windows release build, the pre-build hook creates a self-contained backend executable and includes it in the installer.
 
-Gemini, wake-word detection, speech recognition, TTS, and third-party app control are not connected yet.
+Gemini text replies are now optional; wake-word detection, speech recognition, TTS, and third-party app control are not connected yet.
 
 ## Requirements
 
@@ -59,9 +59,9 @@ npm install
 npm run tauri:build
 ```
 
-Tauri's pre-build hook runs the frontend build and `backend/build_backend.py`, which uses PyInstaller to create `rits-backend.exe` and copies it into Tauri's resource directory. The generated executable is a local build artifact and should not be committed. The installer build has not yet been validated on a Windows runner.
+Tauri's pre-build hook runs the frontend build and `backend/build_backend.py`, which uses PyInstaller to create `rits-backend.exe` and copies it into Tauri's resource directory. The generated executable is a local build artifact and should not be committed. The Windows installer build has been validated by GitHub Actions.
 
-## 5. Try local commands
+## 5. Optional: enable Gemini text replies\n\nCreate a Gemini API key in Google AI Studio. In PowerShell, set it for your Windows user (do not paste it into chat, source files, or GitHub):\n\n```powershell\n[Environment]::SetEnvironmentVariable("RITS_GEMINI_API_KEY", "YOUR_KEY_HERE", "User")\n```\n\nClose RITS completely and launch it again so the desktop backend inherits the new environment. Replace `YOUR_KEY_HERE` locally; never commit the key. To use a different supported model, set `RITS_GEMINI_MODEL` the same way. The `/api/provider` endpoint reports only whether a key is configured. Local commands such as `help`, `status`, and `draft ...` stay local; only requests without a matching local rule are sent to Gemini. Gemini receives text only and cannot execute actions. Cloud API usage may have quotas or charges; check your account limits. To disable Gemini, clear the user environment variable and restart RITS.\n\n## 6. Try local commands
 
 - `help` — shows available commands
 - `status` — checks the local core
