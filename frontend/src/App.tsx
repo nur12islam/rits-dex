@@ -3,7 +3,8 @@ import { Activity, ArrowUpRight, Command, Cpu, Mic, ShieldCheck, Sparkles, Termi
 
 type Result = { source: string; message: string; proposal?: { action_id: string; arguments: Record<string, unknown>; description: string; requires_confirmation?: boolean } | null };
 type PendingApproval = { token: string; action_id: string; arguments: Record<string, unknown>; description: string; expires_in_seconds: number };
-type Adapter = { adapter_id: string; display_name: string; description: string; enabled: boolean; health: string; capabilities: { capability_id: string; description: string; data_class: string; requires_confirmation: boolean }[] };\ntype ProviderStatus = { configured: boolean; provider: string; model: string; mode: string };
+type Adapter = { adapter_id: string; display_name: string; description: string; enabled: boolean; health: string; capabilities: { capability_id: string; description: string; data_class: string; requires_confirmation: boolean }[] };
+type ProviderStatus = { configured: boolean; provider: string; model: string; mode: string };
 
 const API = "http://127.0.0.1:8765";
 type View = "assistant" | "integrations" | "activity";
@@ -21,7 +22,8 @@ export default function App() {
   const [online, setOnline] = useState(false);
   const [busy, setBusy] = useState(false);
   const [view, setView] = useState<View>("assistant");
-  const [adapters, setAdapters] = useState<Adapter[]>([]);\n  const [providerStatus, setProviderStatus] = useState<ProviderStatus | null>(null);
+  const [adapters, setAdapters] = useState<Adapter[]>([]);
+  const [providerStatus, setProviderStatus] = useState<ProviderStatus | null>(null);
   const [checking, setChecking] = useState(false);
   const [pendingApproval, setPendingApproval] = useState<PendingApproval | null>(null);
   const [approvalBusy, setApprovalBusy] = useState(false);
@@ -178,7 +180,8 @@ export default function App() {
         {view === "integrations" && <>
           <div className="eyebrow"><span /> CONNECTED WORKSPACE</div>
           <h1>One assistant.<br /><span>Many apps.</span></h1>
-          <p className="intro">RITS is designed to work across your desktop. Every integration will declare its capabilities and permissions before it can act.</p>\n          <div className="notice"><Sparkles size={17} /><span><b>Optional Gemini text brain:</b> {providerStatus?.configured ? "Connected to " + providerStatus.model + ". Text only; no tools or actions are exposed." : "Not configured. Set RITS_GEMINI_API_KEY in your Windows user environment and restart RITS. Never commit or share the key."}</span></div>
+          <p className="intro">RITS is designed to work across your desktop. Every integration will declare its capabilities and permissions before it can act.</p>
+          <div className="notice"><Sparkles size={17} /><span><b>Optional Gemini text brain:</b> {providerStatus?.configured ? "Connected to " + providerStatus.model + ". Text only; no tools or actions are exposed." : "Not configured. Set RITS_GEMINI_API_KEY in your Windows user environment and restart RITS. Never commit or share the key."}</span></div>
           <div className="integration-toolbar"><div><Puzzle size={17} /><b>Integration registry</b><span>{adapters.length} enabled</span></div><button className="refresh-button" onClick={() => void refreshCore()} disabled={checking}><RefreshCw size={14} className={checking ? "spin" : ""} /> Refresh</button></div>
           {!online && <div className="notice"><LockKeyhole size={17} /><span>The local core is offline. Start it to load registered integrations.</span></div>}
           {online && adapters.length === 0 && <div className="empty-state"><div className="empty-icon"><Puzzle size={25} /></div><h2>No integrations enabled yet</h2><p>This is intentional. RITS won't claim to control an app until an adapter is implemented, tested, and permissioned.</p></div>}
