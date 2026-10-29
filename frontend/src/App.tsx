@@ -23,7 +23,7 @@ export default function App() {
   const [adapters, setAdapters] = useState<Adapter[]>([]);
   const [checking, setChecking] = useState(false);
 
-  async function refreshCore() {
+  async function refreshCore(): Promise<boolean> {
     setChecking(true);
     try {
       const [healthResponse, integrationResponse] = await Promise.all([
@@ -33,15 +33,17 @@ export default function App() {
       if (!healthResponse.ok || !integrationResponse.ok) throw new Error("Local API unavailable");
       setOnline(true);
       setAdapters(await integrationResponse.json());
+      return true;
     } catch {
       setOnline(false);
       setAdapters([]);
+      return false;
     } finally {
       setChecking(false);
     }
   }
 
-  useEffect(() => { void refreshCore(); }, []);
+  useEffect(() => {\n    let cancelled = false;\n    let timeout: ReturnType<typeof setTimeout>;\n    let attempts = 0;\n    const poll = async () => {\n      const connected = await refreshCore();\n      attempts += 1;\n      if (!cancelled && !connected && attempts < 12) timeout = setTimeout(poll, 1000);\n    };\n    void poll();\n    return () => { cancelled = true; clearTimeout(timeout); };\n  }, []);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
