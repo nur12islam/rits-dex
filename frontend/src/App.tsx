@@ -3,7 +3,7 @@ import { Activity, ArrowUpRight, Command, Cpu, Mic, ShieldCheck, Sparkles, Termi
 
 type Result = { source: string; message: string; proposal?: { action_id: string; arguments: Record<string, unknown>; description: string; requires_confirmation?: boolean } | null };
 type PendingApproval = { token: string; action_id: string; arguments: Record<string, unknown>; description: string; expires_in_seconds: number };
-type Adapter = { adapter_id: string; display_name: string; description: string; enabled: boolean; health: string; capabilities: { capability_id: string; description: string; data_class: string; requires_confirmation: boolean }[] };
+type Adapter = { adapter_id: string; display_name: string; description: string; enabled: boolean; health: string; capabilities: { capability_id: string; description: string; data_class: string; requires_confirmation: boolean }[] };\ntype ProviderStatus = { configured: boolean; provider: string; model: string; mode: string };
 
 const API = "http://127.0.0.1:8765";
 type View = "assistant" | "integrations" | "activity";
@@ -21,7 +21,7 @@ export default function App() {
   const [online, setOnline] = useState(false);
   const [busy, setBusy] = useState(false);
   const [view, setView] = useState<View>("assistant");
-  const [adapters, setAdapters] = useState<Adapter[]>([]);
+  const [adapters, setAdapters] = useState<Adapter[]>([]);\n  const [providerStatus, setProviderStatus] = useState<ProviderStatus | null>(null);
   const [checking, setChecking] = useState(false);
   const [pendingApproval, setPendingApproval] = useState<PendingApproval | null>(null);
   const [approvalBusy, setApprovalBusy] = useState(false);
@@ -30,17 +30,20 @@ export default function App() {
   async function refreshCore(): Promise<boolean> {
     setChecking(true);
     try {
-      const [healthResponse, integrationResponse] = await Promise.all([
+      const [healthResponse, integrationResponse, providerResponse] = await Promise.all([
         fetch(API + "/health"),
         fetch(API + "/api/integrations"),
+        fetch(API + "/api/provider"),
       ]);
-      if (!healthResponse.ok || !integrationResponse.ok) throw new Error("Local API unavailable");
+      if (!healthResponse.ok || !integrationResponse.ok || !providerResponse.ok) throw new Error("Local API unavailable");
       setOnline(true);
       setAdapters(await integrationResponse.json());
+      setProviderStatus(await providerResponse.json());
       return true;
     } catch {
       setOnline(false);
       setAdapters([]);
+      setProviderStatus(null);
       return false;
     } finally {
       setChecking(false);
@@ -163,8 +166,8 @@ export default function App() {
           <section className="command-panel">
             <div className="panel-heading"><div><span className="live-dot" /> COMMAND CONSOLE</div><span>LOCAL RULES FIRST</span></div>
             <form onSubmit={submit}>
-              <textarea value={input} onChange={e => setInput(e.target.value)} placeholder="Try “help”, “status”, “draft …”, or “demo approval”" rows={3} />
-              <div className="form-footer"><span><ShieldCheck size={14} /> No command is sent to the cloud in this build.</span><button disabled={!input.trim() || busy}>{busy ? "Working…" : "Run command"} <ArrowUpRight size={16} /></button></div>
+              <textarea value={input} onChange={e => setInput(e.target.value)} placeholder="Try help, status, draft …, demo approval, or ask a question…" rows={3} />
+              <div className="form-footer"><span><ShieldCheck size={14} /> {providerStatus?.configured ? "Local rules first; unmatched prompts go to Gemini." : "Local-only mode. Configure Gemini to enable AI replies."}</span><button disabled={!input.trim() || busy}>{busy ? "Working…" : "Run command"} <ArrowUpRight size={16} /></button></div>
             </form>
             {result && <div className="result-box"><div className="result-label">{result.source.replace("-", " ").toUpperCase()}</div><p>{result.message}</p>{result.proposal && <div className="proposal"><b>{result.proposal.action_id}</b><span>{result.proposal.description}</span><pre>{JSON.stringify(result.proposal.arguments, null, 2)}</pre>{result.proposal.requires_confirmation && <button className="request-approval" onClick={() => void requestApproval()} disabled={approvalBusy || !!pendingApproval}>{approvalBusy ? "Preparing…" : "Review & request approval"}</button>}</div>}</div>}
           {pendingApproval && <section className="approval-card" role="dialog" aria-modal="true" aria-labelledby="approval-title"><div className="approval-heading"><div className="approval-icon"><ShieldCheck size={19} /></div><div><h2 id="approval-title">Approval required</h2><p>Review this action before allowing it to run.</p></div></div><div className="approval-detail"><span>ACTION</span><b>{pendingApproval.action_id}</b><p>{pendingApproval.description}</p><span>ARGUMENTS</span><pre>{JSON.stringify(pendingApproval.arguments, null, 2)}</pre><small>This one-time approval expires in {pendingApproval.expires_in_seconds} seconds.</small></div><div className="approval-actions"><button className="reject-button" onClick={() => void rejectAction()} disabled={approvalBusy}>Reject</button><button className="approve-button" onClick={() => void approveAction()} disabled={approvalBusy}>{approvalBusy ? "Processing…" : "Approve action"}</button></div></section>}
@@ -175,7 +178,7 @@ export default function App() {
         {view === "integrations" && <>
           <div className="eyebrow"><span /> CONNECTED WORKSPACE</div>
           <h1>One assistant.<br /><span>Many apps.</span></h1>
-          <p className="intro">RITS is designed to work across your desktop. Every integration will declare its capabilities and permissions before it can act.</p>
+          <p className="intro">RITS is designed to work across your desktop. Every integration will declare its capabilities and permissions before it can act.</p>\n          <div className="notice"><Sparkles size={17} /><span><b>Optional Gemini text brain:</b> {providerStatus?.configured ? "Connected to " + providerStatus.model + ". Text only; no tools or actions are exposed." : "Not configured. Set RITS_GEMINI_API_KEY in your Windows user environment and restart RITS. Never commit or share the key."}</span></div>
           <div className="integration-toolbar"><div><Puzzle size={17} /><b>Integration registry</b><span>{adapters.length} enabled</span></div><button className="refresh-button" onClick={() => void refreshCore()} disabled={checking}><RefreshCw size={14} className={checking ? "spin" : ""} /> Refresh</button></div>
           {!online && <div className="notice"><LockKeyhole size={17} /><span>The local core is offline. Start it to load registered integrations.</span></div>}
           {online && adapters.length === 0 && <div className="empty-state"><div className="empty-icon"><Puzzle size={25} /></div><h2>No integrations enabled yet</h2><p>This is intentional. RITS won't claim to control an app until an adapter is implemented, tested, and permissioned.</p></div>}
