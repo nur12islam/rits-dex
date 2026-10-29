@@ -162,7 +162,7 @@ export default function App() {
           <p className="intro">One calm place to think, automate, and work across your apps.<br />Your local rules work without an AI provider.</p>
           <div className="status-grid">
             <div className="status-card"><div className="card-icon"><Terminal size={18} /></div><div><small>LOCAL AUTOMATION</small><strong>Foundation ready</strong></div><span className="tiny-status">RULES</span></div>
-            <div className="status-card"><div className="card-icon purple"><Sparkles size={18} /></div><div><small>AI PROVIDER</small><strong>Not connected</strong></div><span className="tiny-status pending">NEXT</span></div>
+            <div className="status-card"><div className="card-icon purple"><Sparkles size={18} /></div><div><small>AI PROVIDER</small><strong>{providerStatus?.configured ? providerStatus.provider + " · " + providerStatus.model : "Not configured"}</strong></div><span className={"tiny-status " + (providerStatus?.configured ? "" : "pending")}>{providerStatus?.configured ? "READY" : "OPTIONAL"}</span></div>
             <div className="status-card"><div className="card-icon red"><Mic size={18} /></div><div><small>VOICE / WAKE WORD</small><strong>Not connected</strong></div><span className="tiny-status pending">NEXT</span></div>
           </div>
           <section className="command-panel">
