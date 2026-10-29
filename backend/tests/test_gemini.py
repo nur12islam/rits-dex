@@ -48,7 +48,7 @@ def test_generate_reply_parses_plain_text_and_uses_key_header(monkeypatch):
 
     monkeypatch.setattr(gemini, "urlopen", fake_urlopen)
     assert generate_reply("hello") == "Hello from RITS."
-    assert captured["url"].endswith("/gemini-2.5-flash:generateContent")
+    assert captured["url"].endswith("/gemini-3.8-flash:generateContent")
     assert captured["headers"]["X-goog-api-key"] == "test-secret"
     assert captured["timeout"] == 20.0
     assert "tools" not in captured["body"]
