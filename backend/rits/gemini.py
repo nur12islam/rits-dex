@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import json
 import os
+import socket
+import ssl
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -59,8 +61,23 @@ def generate_reply(user_text: str, *, timeout: float = 20.0) -> str:
     except HTTPError as exc:
         # Do not expose provider response bodies or secrets to the UI/logs.
         raise GeminiUnavailable(f"Gemini request failed (HTTP {exc.code}).") from None
-    except (URLError, TimeoutError, OSError):
-        raise GeminiUnavailable("Gemini could not be reached. Check the internet connection and try again.") from None
+    except URLError as exc:
+        # Keep useful diagnostics while never exposing request headers, API keys,
+        # or provider response bodies to the UI.
+        reason = exc.reason
+        if isinstance(reason, (ssl.SSLError, ssl.CertificateError)):
+            message = "Gemini TLS verification failed. Check the Windows date/time, security software HTTPS inspection, and the bundled Python certificate store."
+        elif isinstance(reason, socket.gaierror):
+            message = "Gemini DNS lookup failed. Check DNS or whether your network blocks generativelanguage.googleapis.com."
+        elif isinstance(reason, (TimeoutError, socket.timeout)):
+            message = "Gemini connection timed out. Check internet stability or network/firewall restrictions."
+        elif isinstance(reason, (ConnectionRefusedError, ConnectionResetError, OSError)):
+            message = "Gemini connection was blocked or reset. Check firewall, VPN, proxy, or network restrictions."
+        else:
+            message = "Gemini network request failed. Check DNS, TLS certificates, internet access, and firewall/proxy settings."
+        raise GeminiUnavailable(message) from None
+    except (TimeoutError, OSError):
+        raise GeminiUnavailable("Gemini network request failed. Check internet access and firewall/proxy settings.") from None
     except (json.JSONDecodeError, UnicodeDecodeError):
         raise GeminiUnavailable("Gemini returned an unreadable response.") from None
 
