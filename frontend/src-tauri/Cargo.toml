@@ -1,0 +1,12 @@
+[package]
+name = "rits"
+version = "0.1.0"
+description = "RITS — Local-first desktop assistant"
+authors = ["Nur Islam (DARKI)"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }

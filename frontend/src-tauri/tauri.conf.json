@@ -1,0 +1,56 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "RITS",
+  "version": "0.1.0",
+  "identifier": "online.darki.rits",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "python generate_icon.py && npm run build && npm run bundle:backend",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "RITS — Desktop Assistant",
+        "width": 1200,
+        "height": 820,
+        "minWidth": 760,
+        "minHeight": 600,
+        "center": true,
+        "resizable": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost http://127.0.0.1:8765 http://localhost:5173 ws://localhost:5173; img-src 'self' asset: data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; script-src 'self'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "nsis"
+    ],
+    "publisher": "Nur Islam (DARKI)",
+    "homepage": "https://darki.online",
+    "shortDescription": "Local-first desktop AI assistant",
+    "longDescription": "RITS is a local-first Windows desktop assistant with safe, permission-gated workflows and optional AI-powered replies.",
+    "copyright": "Copyright © 2026 Nur Islam (DARKI)",
+    "icon": [
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "installerIcon": "icons/icon.ico",
+        "uninstallerIcon": "icons/icon.ico",
+        "startMenuFolder": "RITS",
+        "languages": [
+          "English"
+        ]
+      }
+    },
+    "resources": {
+      "resources/rits-backend.exe": "rits-backend.exe"
+    }
+  }
+}
